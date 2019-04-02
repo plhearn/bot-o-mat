@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Threading;
 using System.Diagnostics;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -111,6 +112,10 @@ namespace Bot_O_Mat
             cbRobotType.DropDownStyle = ComboBoxStyle.DropDownList;
 
             loadJson();
+
+            loadAppData();
+
+            loadDropDowns();
         }
 
         private void loadJson()
@@ -126,9 +131,59 @@ namespace Bot_O_Mat
                 type.description = x.Value.ToString();
                 robotTypes.Add(type);
             }
-
-            loadDropDowns();
         }
+
+        private void loadAppData()
+        {
+            robots = ReadFromJsonFile<List<Robot>>("robots.txt");
+
+            if (robots == null)
+                robots = new List<Robot>();
+
+
+            taskHistory = ReadFromJsonFile<List<TaskRecord>>("taskHistory.txt");
+
+            if (taskHistory == null)
+                taskHistory = new List<TaskRecord>();
+            
+            int taskCount = taskHistory.Count;
+
+            for (int i = 0; i < taskCount; i++)
+            {
+                TaskRecord record = new TaskRecord(taskHistory[i].robot, taskHistory[i].task, taskHistory[i].key);
+                taskHistory.Add(record);
+                
+
+                ListViewItem lvi = new ListViewItem();
+
+                int modifiedETA = getModifiedETA(taskHistory[i].robot.type, taskHistory[i].task);
+
+                lvi.SubItems[0].Text = taskHistory[i].robot.name;
+                lvi.SubItems.Add(taskHistory[i].task.description);
+                lvi.SubItems.Add(modifiedETA + " / " + modifiedETA);
+                lvi.SubItems.Add("");
+
+                lvTasks.Items.Add(lvi);
+            }
+
+
+            List<dynamic> robotScores = ReadFromJsonFile<List<dynamic>>("leaderBoard.txt");
+
+            if (robotScores == null)
+                robotScores = new List<dynamic>();
+
+            if (robotScores != null)
+            {
+                for (int i = 0; i < robotScores.Count; i++)
+                {
+                    string[] row = { (i + 1).ToString(), robotScores[i].name, ((int)robotScores[i].avgTime).ToString() };
+                    var listViewItem = new ListViewItem(row);
+                    lvLeaderBoard.Items.Add(listViewItem);
+                }
+            }
+
+        }
+
 
         private void loadDropDowns()
         {
@@ -182,6 +237,8 @@ namespace Bot_O_Mat
             robots.Add(robot);
 
             loadRobotDropDown();
+
+            WriteToJsonFile<List<Robot>>("robots.txt", robots);
         }
 
         private void btnStartTask_Click(object sender, EventArgs e)
@@ -281,7 +338,7 @@ namespace Bot_O_Mat
                 // find the ListViewItem based on the key
                 ListViewItem lvi = lvTasks.Items.Cast<ListViewItem>().FirstOrDefault(q => q.SubItems[3].Text == key);
 
-                //set the position of the progress bars.  doesn't work too well with scrolling.
+                //set the position of the progress bars.  doesn't work too well with scrolling.  The constant updating of controls also causes flicker.  I'm leaving it in anyways because it looks cool.
                 Rectangle r = lvi.SubItems[3].Bounds;
                 pb.SetBounds(r.X, r.Y, r.Width, r.Height);
 
@@ -303,6 +360,8 @@ namespace Bot_O_Mat
                 {
                     TaskRecord record = taskHistory.First(i => i.key == key);
                     record.completionTime = pb.Value;
+
+                    WriteToJsonFile<List<TaskRecord>>("taskHistory.txt", taskHistory);
 
                     updateLeaderBoard();
 
@@ -340,6 +399,8 @@ namespace Bot_O_Mat
             lvTasks.Items.Clear();
             lvTasks.Controls.Clear();
             updateLeaderBoard();
+
+            WriteToJsonFile<List<TaskRecord>>("taskHistory.txt", null);
         }
 
         private void btnSimulate_Click(object sender, EventArgs e)
@@ -363,6 +424,8 @@ namespace Bot_O_Mat
                 }
 
                 loadRobotDropDown();
+
+                WriteToJsonFile<List<Robot>>("robots.txt", robots);
             }
 
 
@@ -380,26 +443,66 @@ namespace Bot_O_Mat
 
         private void updateLeaderBoard()
         {
-            string strLeaderBoard = "";
+            List<dynamic> robotScores = new List<dynamic>();
 
             foreach(Robot robot in robots)
             {
-                strLeaderBoard += robot.name + "   ";
-
-                string strAvgTime = "N/A";
-
                 List <TaskRecord> completedRecords = taskHistory.FindAll(r => r.robot == robot && r.completionTime >= 0);
 
                 if (completedRecords.Count > 0)
-                {
-                    strAvgTime = completedRecords.Average(r => r.completionTime).ToString();
-                    strLeaderBoard += strAvgTime;
-                }
+                    robotScores.Add(new { name = robot.name, avgTime = completedRecords.Average(r => r.completionTime) });
+            }
+            
+            robotScores.Sort((x, y) => x.avgTime.CompareTo(y.avgTime));
 
-                strLeaderBoard +=  "\n";
+
+            lvLeaderBoard.Items.Clear();
+
+            for (int i = 0; i < robotScores.Count; i++)
+            {
+                string[] row = { (i+1).ToString(), robotScores[i].name, ((int)robotScores[i].avgTime).ToString() };
+                var listViewItem = new ListViewItem(row);
+                lvLeaderBoard.Items.Add(listViewItem);
             }
 
-            lblLeaderBoard.Text = strLeaderBoard;
+            WriteToJsonFile<List<dynamic>>("leaderBoard.txt", robotScores);
+        }
+
+        public void WriteToJsonFile<T>(string filePath, T objectToWrite, bool append = false) where T : new()
+        {
+            TextWriter writer = null;
+            try
+            {
+                var contentsToWriteToFile = JsonConvert.SerializeObject(objectToWrite);
+                writer = new StreamWriter(filePath, append);
+                writer.Write(contentsToWriteToFile);
+            }
+            finally
+            {
+                if (writer != null)
+                    writer.Close();
+            }
+        }
+
+        public T ReadFromJsonFile<T>(string filePath) where T : new()
+        {
+            TextReader reader = null;
+            try
+            {
+                if(File.Exists(filePath))
+                {
+                    reader = new StreamReader(filePath);
+                    var fileContents = reader.ReadToEnd();
+                    return JsonConvert.DeserializeObject<T>(fileContents);
+                }
+
+                return JsonConvert.DeserializeObject<T>("");
+            }
+            finally
+            {
+                if (reader != null)
+                    reader.Close();
+            }
         }
 
     }
