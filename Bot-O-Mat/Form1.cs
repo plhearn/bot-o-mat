@@ -12,9 +12,11 @@ using System.Diagnostics;
 using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Reflection;
 
 namespace Bot_O_Mat
 {
+
     public partial class Form1 : Form
     {
         string strRobotTasks = @"[
@@ -85,13 +87,11 @@ namespace Bot_O_Mat
             public Robot robot;
             public RobotTask task;
             public int completionTime;
-            public string key;
 
-            public TaskRecord(Robot robot, RobotTask task, string key)
+            public TaskRecord(Robot robot, RobotTask task)
             {
                 this.robot = robot;
                 this.task = task;
-                this.key = key;
                 completionTime = -1;
             }
         }
@@ -103,6 +103,7 @@ namespace Bot_O_Mat
 
         const int timerInterval = 100;
 
+
         public Form1()
         {
             InitializeComponent();
@@ -110,6 +111,8 @@ namespace Bot_O_Mat
             cbTask.DropDownStyle = ComboBoxStyle.DropDownList;  //make read only
             cbRobot.DropDownStyle = ComboBoxStyle.DropDownList;
             cbRobotType.DropDownStyle = ComboBoxStyle.DropDownList;
+            lvTasks.DoubleBuffered(true);   //reduces flicker from updating
+            lvLeaderBoard.DoubleBuffered(true);
 
             loadJson();
 
@@ -150,7 +153,7 @@ namespace Bot_O_Mat
 
             for (int i = 0; i < taskCount; i++)
             {
-                TaskRecord record = new TaskRecord(taskHistory[i].robot, taskHistory[i].task, taskHistory[i].key);
+                TaskRecord record = new TaskRecord(taskHistory[i].robot, taskHistory[i].task);
                 taskHistory.Add(record);
                 
 
@@ -265,36 +268,28 @@ namespace Bot_O_Mat
 
         private void addTask(Robot robot, RobotTask task)
         {
-            string key = Guid.NewGuid().ToString();     //unique identifier used for updating the progress bars
-
-            TaskRecord record = new TaskRecord(robot, task, key);
-            taskHistory.Add(record);
-
-            System.Timers.Timer timer = new System.Timers.Timer();
-            timer.Elapsed += (obj, evnt) => SetProgress(key, timer);
-            timer.Interval = timerInterval;
-            timer.Enabled = true;
 
             ListViewItem lvi = new ListViewItem();
 
             int modifiedETA = getModifiedETA(robot.type, task);
 
-            lvi.SubItems[0].Text = robot.name;
-            lvi.SubItems.Add(task.description);
-            lvi.SubItems.Add("0 / " + modifiedETA);
-            lvi.SubItems.Add(key);
+            lvi.SubItems[0].Text = robot.name;          //name
+            lvi.SubItems.Add(task.description);         //task
+            lvi.SubItems.Add("0 / " + modifiedETA);     //progress
+            lvi.SubItems.Add("");                       //bar
+            lvi.SubItems.Add("0");                      //current time 
+            lvi.SubItems.Add(modifiedETA.ToString());   //eta
 
             lvTasks.Items.Add(lvi);
 
-            ProgressBar pb = new ProgressBar();
+            TaskRecord record = new TaskRecord(robot, task);
+            taskHistory.Add(record);
 
-            pb.Minimum = 0;
-            pb.Maximum = modifiedETA;
-            pb.Value = 0;
-            pb.Name = key;
-            lvTasks.Controls.Add(pb);
+            System.Timers.Timer timer = new System.Timers.Timer();
+            timer.Elapsed += (obj, evnt) => SetProgress(lvi, timer, record);
+            timer.Interval = timerInterval;
+            timer.Enabled = true;
 
-            updateProgressBar(key, 0);
         }
 
 
@@ -329,66 +324,71 @@ namespace Bot_O_Mat
             return (int)eta;
         }
 
-        private int updateProgressBar(string key, int amount)
+        private int updateProgressBar(ListViewItem lvi, int amount, TaskRecord record)
         {
-            ProgressBar pb = lvTasks.Controls.OfType<ProgressBar>().FirstOrDefault(q => q.Name == key);
+            int currentProgress = 0;
 
-            if (pb != null)
+            int.TryParse(lvi.SubItems[4].Text, out currentProgress);
+
+            int max = 0;
+
+            int.TryParse(lvi.SubItems[5].Text, out max);
+
+            if (currentProgress < max)
             {
-                // find the ListViewItem based on the key
-                ListViewItem lvi = lvTasks.Items.Cast<ListViewItem>().FirstOrDefault(q => q.SubItems[3].Text == key);
+                int newValue = currentProgress + amount;
 
-                //set the position of the progress bars.  doesn't work too well with scrolling.  The constant updating of controls also causes flicker.  I'm leaving it in anyways because it looks cool.
-                Rectangle r = lvi.SubItems[3].Bounds;
-                pb.SetBounds(r.X, r.Y, r.Width, r.Height);
+                if (newValue > max)
+                    newValue = max;
+                
+                lvi.SubItems[2].Text = newValue.ToString() + " / " + max.ToString();
 
-                if (pb.Value < pb.Maximum)
-                {
-                    int newValue = pb.Value + amount;
+                float percentComplete = newValue / (float)max;
 
-                    if (newValue > pb.Maximum)
-                        newValue = pb.Maximum;
+                int numBars = (int)(100 * percentComplete);
 
-                    if (lvi != null)
-                        lvi.SubItems[2].Text = newValue.ToString() + " / " + pb.Maximum.ToString();
+                string strBars = "";
 
-                    pb.Value = newValue;
+                for (int i = 0; i < numBars; i++)
+                    strBars += "|";
+
+                lvi.SubItems[3].Text = strBars;
+
+                lvi.SubItems[4].Text = newValue.ToString();
                     
-                    return 1;
-                }
-                else
-                {
-                    TaskRecord record = taskHistory.First(i => i.key == key);
-                    record.completionTime = pb.Value;
+                return 1;
+            }
+            else
+            {
+                record.completionTime = currentProgress;
 
-                    WriteToJsonFile<List<TaskRecord>>("taskHistory.txt", taskHistory);
+                WriteToJsonFile<List<TaskRecord>>("taskHistory.txt", taskHistory);
 
-                    updateLeaderBoard();
+                updateLeaderBoard();
 
-                    return 0;
-                }
+                return 0;
             }
 
             return 1;
         }
 
-        delegate void SetProgressCallback(string key, System.Timers.Timer timer);
+        delegate void SetProgressCallback(ListViewItem lvi, System.Timers.Timer timer, TaskRecord record);
 
-        private void SetProgress(string key, System.Timers.Timer timer)
+        private void SetProgress(ListViewItem lvi, System.Timers.Timer timer, TaskRecord record)
         {
             if (this.lvTasks.InvokeRequired)
             {
                 SetProgressCallback d = new SetProgressCallback(SetProgress);
-                this.BeginInvoke(d, new object[] { key, timer ?? null });
+                this.BeginInvoke(d, new object[] { lvi, timer ?? null, record });
             }
             else
             {
-                int updateResult = updateProgressBar(key, timerInterval);
+                int updateResult = updateProgressBar(lvi, timerInterval, record);
 
                 if (updateResult == 0)
                 {
-                    //timer.Stop();
-                    //timer.Dispose();
+                    timer.Stop();
+                    timer.Dispose();
                 }
             }
         }
@@ -505,5 +505,15 @@ namespace Bot_O_Mat
             }
         }
 
+    }
+
+    //this makes the listview use a double buffer.  Without it the listview will flicker a lot due to 10+ timer threads all updating it every 0.1 seconds.  (I used stack overflow to figure this out)
+    public static class ControlExtensions
+    {
+        public static void DoubleBuffered(this Control control, bool enable)
+        {
+            var doubleBufferPropertyInfo = control.GetType().GetProperty("DoubleBuffered", BindingFlags.Instance | BindingFlags.NonPublic);
+            doubleBufferPropertyInfo.SetValue(control, enable, null);
+        }
     }
 }

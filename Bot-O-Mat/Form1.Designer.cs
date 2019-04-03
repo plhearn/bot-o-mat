@@ -41,18 +41,20 @@
             this.cbRobot = new System.Windows.Forms.ComboBox();
             this.label3 = new System.Windows.Forms.Label();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.lvLeaderBoard = new System.Windows.Forms.ListView();
+            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.lblLeaderBoard = new System.Windows.Forms.Label();
             this.lvTasks = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader8 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader9 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.btnSimulate = new System.Windows.Forms.Button();
             this.btnClearHistory = new System.Windows.Forms.Button();
-            this.lvLeaderBoard = new System.Windows.Forms.ListView();
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader6 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader7 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -85,9 +87,9 @@
             // cbRobotType
             // 
             this.cbRobotType.FormattingEnabled = true;
-            this.cbRobotType.Location = new System.Drawing.Point(142, 95);
+            this.cbRobotType.Location = new System.Drawing.Point(75, 95);
             this.cbRobotType.Name = "cbRobotType";
-            this.cbRobotType.Size = new System.Drawing.Size(186, 28);
+            this.cbRobotType.Size = new System.Drawing.Size(253, 28);
             this.cbRobotType.TabIndex = 3;
             // 
             // label2
@@ -101,9 +103,9 @@
             // 
             // txtRobotName
             // 
-            this.txtRobotName.Location = new System.Drawing.Point(147, 45);
+            this.txtRobotName.Location = new System.Drawing.Point(74, 39);
             this.txtRobotName.Name = "txtRobotName";
-            this.txtRobotName.Size = new System.Drawing.Size(181, 26);
+            this.txtRobotName.Size = new System.Drawing.Size(253, 26);
             this.txtRobotName.TabIndex = 1;
             // 
             // label1
@@ -161,7 +163,7 @@
             this.cbRobot.FormattingEnabled = true;
             this.cbRobot.Location = new System.Drawing.Point(75, 41);
             this.cbRobot.Name = "cbRobot";
-            this.cbRobot.Size = new System.Drawing.Size(118, 28);
+            this.cbRobot.Size = new System.Drawing.Size(262, 28);
             this.cbRobot.TabIndex = 1;
             // 
             // label3
@@ -183,68 +185,6 @@
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Leader Board";
-            // 
-            // lblLeaderBoard
-            // 
-            this.lblLeaderBoard.AutoSize = true;
-            this.lblLeaderBoard.Location = new System.Drawing.Point(47, 47);
-            this.lblLeaderBoard.Name = "lblLeaderBoard";
-            this.lblLeaderBoard.Size = new System.Drawing.Size(0, 20);
-            this.lblLeaderBoard.TabIndex = 0;
-            // 
-            // lvTasks
-            // 
-            this.lvTasks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader4,
-            this.columnHeader3});
-            this.lvTasks.Location = new System.Drawing.Point(410, 36);
-            this.lvTasks.Name = "lvTasks";
-            this.lvTasks.Size = new System.Drawing.Size(1004, 722);
-            this.lvTasks.TabIndex = 3;
-            this.lvTasks.UseCompatibleStateImageBehavior = false;
-            this.lvTasks.View = System.Windows.Forms.View.Details;
-            // 
-            // columnHeader1
-            // 
-            this.columnHeader1.Text = "Robot";
-            this.columnHeader1.Width = 150;
-            // 
-            // columnHeader2
-            // 
-            this.columnHeader2.Text = "Task";
-            this.columnHeader2.Width = 150;
-            // 
-            // columnHeader4
-            // 
-            this.columnHeader4.Text = "Progress";
-            this.columnHeader4.Width = 100;
-            // 
-            // columnHeader3
-            // 
-            this.columnHeader3.Text = "Bar";
-            this.columnHeader3.Width = 240;
-            // 
-            // btnSimulate
-            // 
-            this.btnSimulate.Location = new System.Drawing.Point(1273, 788);
-            this.btnSimulate.Name = "btnSimulate";
-            this.btnSimulate.Size = new System.Drawing.Size(141, 56);
-            this.btnSimulate.TabIndex = 4;
-            this.btnSimulate.Text = "Simulate 10 Robots";
-            this.btnSimulate.UseVisualStyleBackColor = true;
-            this.btnSimulate.Click += new System.EventHandler(this.btnSimulate_Click);
-            // 
-            // btnClearHistory
-            // 
-            this.btnClearHistory.Location = new System.Drawing.Point(1141, 788);
-            this.btnClearHistory.Name = "btnClearHistory";
-            this.btnClearHistory.Size = new System.Drawing.Size(114, 56);
-            this.btnClearHistory.TabIndex = 5;
-            this.btnClearHistory.Text = "Clear Task History";
-            this.btnClearHistory.UseVisualStyleBackColor = true;
-            this.btnClearHistory.Click += new System.EventHandler(this.btnClearHistory_Click);
             // 
             // lvLeaderBoard
             // 
@@ -273,6 +213,80 @@
             // 
             this.columnHeader7.Text = "Avg Time";
             // 
+            // lblLeaderBoard
+            // 
+            this.lblLeaderBoard.AutoSize = true;
+            this.lblLeaderBoard.Location = new System.Drawing.Point(47, 47);
+            this.lblLeaderBoard.Name = "lblLeaderBoard";
+            this.lblLeaderBoard.Size = new System.Drawing.Size(0, 20);
+            this.lblLeaderBoard.TabIndex = 0;
+            // 
+            // lvTasks
+            // 
+            this.lvTasks.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2,
+            this.columnHeader4,
+            this.columnHeader3,
+            this.columnHeader8,
+            this.columnHeader9});
+            this.lvTasks.Location = new System.Drawing.Point(410, 36);
+            this.lvTasks.Name = "lvTasks";
+            this.lvTasks.Size = new System.Drawing.Size(1004, 722);
+            this.lvTasks.TabIndex = 3;
+            this.lvTasks.UseCompatibleStateImageBehavior = false;
+            this.lvTasks.View = System.Windows.Forms.View.Details;
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Robot";
+            this.columnHeader1.Width = 150;
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Task";
+            this.columnHeader2.Width = 150;
+            // 
+            // columnHeader4
+            // 
+            this.columnHeader4.Text = "Progress";
+            this.columnHeader4.Width = 100;
+            // 
+            // columnHeader3
+            // 
+            this.columnHeader3.Text = "Bar";
+            this.columnHeader3.Width = 240;
+            // 
+            // columnHeader8
+            // 
+            this.columnHeader8.Text = "completion";
+            this.columnHeader8.Width = 0;
+            // 
+            // columnHeader9
+            // 
+            this.columnHeader9.Text = "eta";
+            this.columnHeader9.Width = 0;
+            // 
+            // btnSimulate
+            // 
+            this.btnSimulate.Location = new System.Drawing.Point(1273, 788);
+            this.btnSimulate.Name = "btnSimulate";
+            this.btnSimulate.Size = new System.Drawing.Size(141, 56);
+            this.btnSimulate.TabIndex = 4;
+            this.btnSimulate.Text = "Simulate 10 Robots";
+            this.btnSimulate.UseVisualStyleBackColor = true;
+            this.btnSimulate.Click += new System.EventHandler(this.btnSimulate_Click);
+            // 
+            // btnClearHistory
+            // 
+            this.btnClearHistory.Location = new System.Drawing.Point(1141, 788);
+            this.btnClearHistory.Name = "btnClearHistory";
+            this.btnClearHistory.Size = new System.Drawing.Size(114, 56);
+            this.btnClearHistory.TabIndex = 5;
+            this.btnClearHistory.Text = "Clear Task History";
+            this.btnClearHistory.UseVisualStyleBackColor = true;
+            this.btnClearHistory.Click += new System.EventHandler(this.btnClearHistory_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -285,6 +299,7 @@
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.Name = "Form1";
+            this.ShowIcon = false;
             this.Text = "Bot-O-Mat";
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -323,6 +338,8 @@
         private System.Windows.Forms.ColumnHeader columnHeader5;
         private System.Windows.Forms.ColumnHeader columnHeader6;
         private System.Windows.Forms.ColumnHeader columnHeader7;
+        private System.Windows.Forms.ColumnHeader columnHeader8;
+        private System.Windows.Forms.ColumnHeader columnHeader9;
     }
 }
 
