@@ -5,6 +5,9 @@ Simulates robots doing stuff
 
 <img src='https://i.imgur.com/q37O1P2.gif'>
 
+#Instructions
+
+Open bot-o-mat.sln in visual studio 2017 and press F5.  The projects uses the newtonsoft nuget package to load the json data.  If you get an error about that then go into the solution explorer and right click on "References" => "Manage Nuget packages" and search for newtonsoft.  
 
 
 # BOT-O-MAT
